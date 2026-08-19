@@ -1,0 +1,87 @@
+{
+  "name": "02-watch-and-summarize",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "/data/inbox",
+        "triggerOn": "folder",
+        "events": ["add"]
+      },
+      "id": "b2b2b2b2-0001-4000-8000-000000000001",
+      "name": "Local File Trigger",
+      "type": "n8n-nodes-base.localFileTrigger",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "fileSelector": "={{$json.path}}"
+      },
+      "id": "b2b2b2b2-0002-4000-8000-000000000002",
+      "name": "Read File",
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [480, 300]
+    },
+    {
+      "parameters": {
+        "operation": "text"
+      },
+      "id": "b2b2b2b2-0003-4000-8000-000000000003",
+      "name": "Extract From File",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [720, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:11434/api/generate",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"llama3.2:3b\",\n  \"prompt\": \"Summarize the following text in exactly 3 short bullet points:\\n\\n{{ $json.text }}\",\n  \"stream\": false\n}",
+        "options": {}
+      },
+      "id": "b2b2b2b2-0004-4000-8000-000000000004",
+      "name": "Ask Ollama to Summarize",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [960, 300]
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "=/data/outbox/summary-{{$now}}.txt",
+        "dataPropertyName": "response"
+      },
+      "id": "b2b2b2b2-0005-4000-8000-000000000005",
+      "name": "Write Summary",
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [1200, 300]
+    }
+  ],
+  "connections": {
+    "Local File Trigger": {
+      "main": [[{ "node": "Read File", "type": "main", "index": 0 }]]
+    },
+    "Read File": {
+      "main": [[{ "node": "Extract From File", "type": "main", "index": 0 }]]
+    },
+    "Extract From File": {
+      "main": [[{ "node": "Ask Ollama to Summarize", "type": "main", "index": 0 }]]
+    },
+    "Ask Ollama to Summarize": {
+      "main": [[{ "node": "Write Summary", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "description": "Article 2 agent: watches /data/inbox (mounted from C:\\AgentWorkspace on Windows), summarizes new .txt files with Ollama, writes the summary to /data/outbox. Import via n8n Menu -> Import from File, then double-check each node's field names against your n8n version before activating.",
+    "articleRepo": "https://github.com/YOUR-USERNAME/agentic-ai-02-first-no-code-agent"
+  }
+}
