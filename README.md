@@ -2,7 +2,7 @@
 
 Standalone companion repo for the Medium article of the same name. This repo is self-contained — it doesn't depend on, or link to, any other article's repo.
 
-📖 Medium article: *(link goes here once published)*
+📖 Medium article: https://medium.com/@babul_b/automating-a-daily-task-with-n8n-ollama-cd4c7b438117
 
 ## What's in this repo
 
